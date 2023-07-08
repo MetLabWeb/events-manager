@@ -1,4 +1,4 @@
-package org.met.metcamp.web.entities;
+package org.met.metcamp.web.entities.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

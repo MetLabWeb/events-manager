@@ -1,4 +1,4 @@
-package org.met.metcamp.web.entities;
+package org.met.metcamp.web.entities.model;
 
 public enum Currency {
     ARS,
