@@ -1,19 +1,21 @@
 package org.met.metcamp.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.met.metcamp.web.entities.model.Event;
+import org.met.metcamp.web.entities.response.EventListResponse;
 import org.met.metcamp.web.entities.response.EventResponse;
 import org.met.metcamp.web.entities.response.Response;
+import org.met.metcamp.web.repository.EventRepository;
 import org.met.metcamp.web.service.EventService;
+import org.met.metcamp.web.utils.MapperUtils;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final EventService eventService = new EventService();
+    private static final MapperUtils mapperUtils = new MapperUtils();
+    private static final EventRepository repository = new EventRepository(mapperUtils);
+    private static final EventService eventService = new EventService(mapperUtils, repository);
+
     public static final String WELCOME_MSG = "Bienvenidx al sistema de eventos. Qué acción deseas realizar?";
     public static final String OPTIONS = "\n1 -> Crear un evento" +
                                          "; 2 -> Conocer los eventos disponibles" +
@@ -30,25 +32,38 @@ public class Main {
         while (option != 0) {
             System.out.println(OPTIONS);
             option = scannerNextInt();
+            Response response;
 
             switch (option) {
                 case 1:
                     System.out.println("------> Ingrese los datos del evento a crear");
-                    eventService.createEvent(SCANNER.nextLine());
+                    response = eventService.createEvent(SCANNER.nextLine());
+                    if (response.getCode() == 201) {
+                        System.out.println(response);
+                        EventResponse eventResponse = (EventResponse) response;
+                        System.out.println(mapperUtils.mapToJson(eventResponse.getEvent()));
+                    } else {
+                        System.out.println(response);
+                    }
                     break;
                 case 2:
                     System.out.println("------> Obteniendo todos los eventos");
-                    ArrayList<Event> events = eventService.getAllEvents();
-                    for (Event e: events) {
-                        System.out.println(MAPPER.writeValueAsString(e));
+                    response = eventService.getAllEvents();
+                    if (response.getCode() == 200) {
+                        System.out.println(response);
+                        EventListResponse eventListResponse = (EventListResponse) response;
+                        System.out.println(mapperUtils.mapToJson(eventListResponse.getEvents()));
+                    } else {
+                        System.out.println(response);
                     }
                     break;
                 case 3:
                     System.out.println("------> Ingrese el ID del evento que desea buscar");
-                    Response response = eventService.getEventById(scannerNextInt());
+                    response = eventService.getEventById(scannerNextInt());
                     if (response.getCode() == 200) {
+                        System.out.println(response);
                         EventResponse eventResponse = (EventResponse) response;
-                        System.out.println(MAPPER.writeValueAsString(eventResponse.getEvent()));
+                        System.out.println(mapperUtils.mapToJson(eventResponse.getEvent()));
                     } else {
                         System.out.println(response);
                     }
@@ -58,11 +73,19 @@ public class Main {
                     int id = scannerNextInt();
                     System.out.println("------> Ingrese los datos a modificar");
                     String json = SCANNER.nextLine();
-                    eventService.updateEvent(id, json);
+                    response = eventService.updateEvent(id, json);
+                    if (response.getCode() == 200) {
+                        System.out.println(response);
+                        EventResponse eventResponse = (EventResponse) response;
+                        System.out.println(mapperUtils.mapToJson(eventResponse.getEvent()));
+                    } else {
+                        System.out.println(response);
+                    }
                     break;
                 case 5:
                     System.out.println("------> Ingrese el ID del evento a borrar");
-                    eventService.deleteEvent(scannerNextInt());
+                    response = eventService.deleteEvent(scannerNextInt());
+                    System.out.println(response);
                     break;
                 case 0:
                     System.out.println(GOOD_BYE_MSG);
@@ -74,6 +97,10 @@ public class Main {
     }
 
     public static int scannerNextInt() {
-        return Integer.parseInt(SCANNER.nextLine());
+        try {
+            return Integer.parseInt(SCANNER.nextLine());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 }
