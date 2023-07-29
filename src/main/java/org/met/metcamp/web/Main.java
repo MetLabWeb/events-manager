@@ -6,6 +6,7 @@ import org.met.metcamp.web.entities.response.EventResponse;
 import org.met.metcamp.web.entities.response.Response;
 import org.met.metcamp.web.repository.EventRepository;
 import org.met.metcamp.web.service.EventService;
+import org.met.metcamp.web.service.ValidationService;
 import org.met.metcamp.web.utils.MapperUtils;
 
 import java.util.Scanner;
@@ -14,7 +15,8 @@ public class Main {
     private static final Scanner SCANNER = new Scanner(System.in);
     private static final MapperUtils mapperUtils = new MapperUtils();
     private static final EventRepository repository = new EventRepository(mapperUtils);
-    private static final EventService eventService = new EventService(mapperUtils, repository);
+    private static final ValidationService validationService = new ValidationService();
+    private static final EventService eventService = new EventService(mapperUtils, repository, validationService);
 
     public static final String WELCOME_MSG = "Bienvenidx al sistema de eventos. Qué acción deseas realizar?";
     public static final String OPTIONS = "\n1 -> Crear un evento" +
@@ -47,7 +49,6 @@ public class Main {
                     }
                     break;
                 case 2:
-                    System.out.println("------> Obteniendo todos los eventos");
                     response = eventService.getAllEvents();
                     if (response.getCode() == 200) {
                         System.out.println(response);

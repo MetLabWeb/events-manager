@@ -1,6 +1,8 @@
 package org.met.metcamp.web.repository;
 
 import lombok.Getter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.met.metcamp.web.entities.model.Event;
 import org.met.metcamp.web.exceptions.RepoException;
 import org.met.metcamp.web.utils.MapperUtils;
@@ -14,6 +16,8 @@ import java.util.Optional;
 
 public class EventRepository {
 
+    private static final Logger logger = LogManager.getLogger();
+
     @Getter
     private final ArrayList<Event> events;
 
@@ -25,11 +29,13 @@ public class EventRepository {
     }
 
     private ArrayList<Event> loadEvents() {
+        String path = "src/main/resources/repository/events.json";
         try {
-            byte[] bytes = Files.readAllBytes(Paths.get("src/main/resources/repository/events.json"));
+            byte[] bytes = Files.readAllBytes(Paths.get(path));
             String input = new String(bytes);
             return this.mapperUtils.mapToEventList(input);
         } catch (IOException io) {
+            logger.fatal("Error reading file located at {} ", path);
             throw new RepoException("Error reading file");
         }
     }
